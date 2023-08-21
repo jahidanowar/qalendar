@@ -13,11 +13,11 @@
 }
 
 @mixin dark-mode {
-  @media (prefers-color-scheme: dark) {
+  @media (prefers-color-scheme: hidden) {
     @content;
   }
 
-  [style*="color-scheme: dark"] & {
+  [style*="color-scheme: hidden"] & {
     @content;
   }
 }

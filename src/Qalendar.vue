@@ -11,10 +11,7 @@
       :data-lang="config?.locale?.substring(0, 2) || 'en'"
     >
       <Transition name="loading">
-        <div
-          v-if="isLoading"
-          class="top-bar-loader"
-        />
+        <div v-if="isLoading" class="top-bar-loader" />
       </Transition>
 
       <AppHeader
@@ -46,10 +43,7 @@
         @datetime-was-clicked="$emit('datetime-was-clicked', $event)"
       >
         <template #weekDayEvent="p">
-          <slot
-            :event-data="p.eventData"
-            name="weekDayEvent"
-          />
+          <slot :event-data="p.eventData" name="weekDayEvent" />
         </template>
 
         <template #eventDialog="p">
@@ -88,17 +82,11 @@
         </template>
 
         <template #monthEvent="p">
-          <slot
-            :event-data="p.eventData"
-            name="monthEvent"
-          />
+          <slot :event-data="p.eventData" name="monthEvent" />
         </template>
 
-        <template #dayCell="{dayData}">
-          <slot
-            :day-data="dayData"
-            name="dayCell"
-          />
+        <template #dayCell="{ dayData }">
+          <slot :day-data="dayData" name="dayCell" />
         </template>
       </Month>
     </div>
@@ -106,18 +94,18 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, type PropType} from 'vue';
-import {type eventInterface} from './typings/interfaces/event.interface';
-import {type configInterface} from './typings/config.interface';
-import Time from './helpers/Time';
-import AppHeader from './components/header/Header.vue';
-import Week from './components/week/Week.vue';
-import {type modeType} from './typings/types';
-import Month from './components/month/Month.vue';
-import Errors from './helpers/Errors';
+import { defineComponent, type PropType } from "vue";
+import { type eventInterface } from "./typings/interfaces/event.interface";
+import { type configInterface } from "./typings/config.interface";
+import Time from "./helpers/Time";
+import AppHeader from "./components/header/Header.vue";
+import Week from "./components/week/Week.vue";
+import { type modeType } from "./typings/types";
+import Month from "./components/month/Month.vue";
+import Errors from "./helpers/Errors";
 
 export default defineComponent({
-  name: 'Qalendar',
+  name: "Qalendar",
 
   components: {
     Month,
@@ -145,17 +133,17 @@ export default defineComponent({
   },
 
   emits: [
-    'event-was-clicked',
-    'event-was-resized',
-    'event-was-dragged',
-    'updated-period',
-    'updated-mode',
-    'edit-event',
-    'delete-event',
-    'interval-was-clicked',
-    'day-was-clicked', // TODO: remove with v4. day-was-clicked is deprecated
-    'date-was-clicked',
-    'datetime-was-clicked',
+    "event-was-clicked",
+    "event-was-resized",
+    "event-was-dragged",
+    "updated-period",
+    "updated-mode",
+    "edit-event",
+    "delete-event",
+    "interval-was-clicked",
+    "day-was-clicked", // TODO: remove with v4. day-was-clicked is deprecated
+    "date-was-clicked",
+    "datetime-was-clicked",
   ],
 
   data() {
@@ -166,7 +154,7 @@ export default defineComponent({
         end: new Date(),
         selectedDate: this.selectedDate,
       },
-      mode: this.config?.defaultMode || ('week' as modeType),
+      mode: this.config?.defaultMode || ("week" as modeType),
       time: new Time(this.config?.week?.startsOn, this.config?.locale || null, {
         start: this.setTimePointsFromDayBoundary(
           this.config?.dayBoundaries?.start || 0
@@ -183,10 +171,10 @@ export default defineComponent({
       ErrorsHelper: Errors,
     };
   },
-  computed:{
+  computed: {
     enhancedConfig(): configInterface {
-      return { ...this.config, isSmall: this.isSmall }
-    }
+      return { ...this.config, isSmall: this.isSmall };
+    },
   },
 
   watch: {
@@ -220,11 +208,11 @@ export default defineComponent({
     this.setConfigOnMount();
     this.onCalendarResize(); // Trigger once on mount, in order to set the correct mode, if viewing on a small screen
     this.setPeriodOnMount();
-    window.addEventListener('resize', this.onCalendarResize);
+    window.addEventListener("resize", this.onCalendarResize);
   },
 
   beforeUnmount() {
-    window.removeEventListener('resize', this.onCalendarResize);
+    window.removeEventListener("resize", this.onCalendarResize);
   },
 
   methods: {
@@ -239,22 +227,22 @@ export default defineComponent({
       value: { start: Date; end: Date; selectedDate: Date },
       leaveMonthMode = false
     ) {
-      this.$emit('updated-period', { start: value.start, end: value.end });
+      this.$emit("updated-period", { start: value.start, end: value.end });
       this.period = value;
 
-      if (leaveMonthMode) this.mode = 'day';
+      if (leaveMonthMode) this.mode = "day";
     },
 
     /**
      * Update this.period according to the new mode, and then set this.mode to the provided payload
      * */
     handleChangeMode(payload: modeType) {
-      if (payload === 'day') {
+      if (payload === "day") {
         this.period.start = this.period.selectedDate;
         this.period.end = this.time.setDateToEndOfDay(this.period.selectedDate);
       }
 
-      if (payload === 'week') {
+      if (payload === "week") {
         const week = this.time.getCalendarWeekDateObjects(
           this.period.selectedDate
         );
@@ -262,7 +250,7 @@ export default defineComponent({
         this.period.end = this.time.setDateToEndOfDay(week[6]);
       }
 
-      if (payload === 'month') {
+      if (payload === "month") {
         const month = this.time.getCalendarMonthSplitInWeeks(
           this.period.selectedDate.getFullYear(),
           this.period.selectedDate.getMonth()
@@ -276,16 +264,16 @@ export default defineComponent({
       }
 
       this.mode = payload;
-      this.$emit('updated-mode', { mode: payload, period: this.period });
+      this.$emit("updated-mode", { mode: payload, period: this.period });
     },
 
     onCalendarResize() {
       // Calculate break point for day mode based on root font-size
       const documentRoot = document.documentElement;
-      const calendarRoot = document.querySelector('.calendar-root');
+      const calendarRoot = document.querySelector(".calendar-root");
       const documentFontSize = +window
         .getComputedStyle(documentRoot)
-        .fontSize.split('p')[0];
+        .fontSize.split("p")[0];
       const breakPointFor1RemEquals16px = 700;
       const multiplier = 16 / documentFontSize;
       const smallCalendarBreakpoint = breakPointFor1RemEquals16px / multiplier; // For 16px root font-size, break point is at 43.75rem
@@ -294,19 +282,19 @@ export default defineComponent({
 
       this.isSmall = calendarRoot.clientWidth < smallCalendarBreakpoint;
 
-      if (this.isSmall && !['day', 'month'].includes(this.mode)) {
-        this.mode = 'day';
+      if (this.isSmall && !["day", "month"].includes(this.mode)) {
+        this.mode = "day";
       }
     },
 
     setPeriodOnMount() {
-      if (this.mode === 'week') {
+      if (this.mode === "week") {
         const currentWeek = this.time.getCalendarWeekDateObjects(
           this.period.selectedDate
         );
         this.period.start = currentWeek[0];
         this.period.end = currentWeek[6];
-      } else if (this.mode === 'month') {
+      } else if (this.mode === "month") {
         const month = this.time.getCalendarMonthSplitInWeeks(
           this.period.selectedDate.getFullYear(),
           this.period.selectedDate.getMonth()
@@ -319,7 +307,7 @@ export default defineComponent({
 
     handleEventWasUpdated(
       calendarEvent: eventInterface,
-      eventType: 'dragged' | 'resized'
+      eventType: "dragged" | "resized"
     ) {
       const newEvents = this.eventsDataProperty.filter(
         (e) => e.id !== calendarEvent.id
@@ -333,17 +321,17 @@ export default defineComponent({
     },
 
     handleDateWasClicked(payload: string) {
-      this.$emit('day-was-clicked', payload); // TODO: remove with v4. day-was-clicked is deprecated
-      this.$emit('date-was-clicked', payload);
-    }
+      this.$emit("day-was-clicked", payload); // TODO: remove with v4. day-was-clicked is deprecated
+      this.$emit("date-was-clicked", payload);
+    },
   },
 });
 </script>
 
 <style lang="scss">
-@import './styles/variables.scss';
-@import './styles/mixins.scss';
-@import '../node_modules/perfect-scrollbar/css/perfect-scrollbar.css';
+@import "./styles/variables.scss";
+@import "./styles/mixins.scss";
+@import "../node_modules/perfect-scrollbar/css/perfect-scrollbar.css";
 
 .calendar-root-wrapper {
   width: 100%;
@@ -381,7 +369,7 @@ export default defineComponent({
     }
 
     .top-bar-loader:before {
-      content: '';
+      content: "";
       height: 4px;
       width: calc(100% - 4px);
       position: absolute;

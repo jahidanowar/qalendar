@@ -1,6 +1,6 @@
 {
-  "name": "qalendar",
-  "description": "Event calendar and date picker for Vue 3",
+  "name": "qalendar-dnu",
+  "description": "Personal Fork of Qalendar. Please use the original package instead.",
   "version": "3.5.0",
   "homepage": "https://tomosterlund.github.io/qalendar/",
   "repository": {
