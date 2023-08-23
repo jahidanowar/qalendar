@@ -23,7 +23,11 @@
         :is-small="isSmall"
         @change-mode="handleChangeMode"
         @updated-period="handleUpdatedPeriod"
-      />
+      >
+        <template v-for="(_, name) in $slots" v-slot:[name]="slotData">
+          <slot :name="name" v-bind="slotData" />
+        </template>
+      </AppHeader>
 
       <Week
         v-if="['week', 'day'].includes(mode)"

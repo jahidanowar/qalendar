@@ -1,7 +1,7 @@
 {
   "name": "qalendar-dnu",
   "description": "Personal Fork of Qalendar. Please use the original package instead.",
-  "version": "3.5.0",
+  "version": "3.5.2",
   "homepage": "https://tomosterlund.github.io/qalendar/",
   "repository": {
     "type": "git",

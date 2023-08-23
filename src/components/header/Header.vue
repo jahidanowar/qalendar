@@ -1,26 +1,42 @@
 <template>
   <div class="calendar-header">
-    <div
-      v-if="periodName"
-      class="calendar-header__period-name"
-    >
+    <div v-if="periodName" class="calendar-header__period-name">
+      <slot
+        name="beforePeriodName"
+        :goToPeriod="goToPeriod"
+        :periodName="periodName"
+      />
       {{ periodName }}
+      <slot
+        name="afterPeriodName"
+        :goToPeriod="goToPeriod"
+        :periodName="periodName"
+      />
     </div>
 
     <div class="calendar-header__period">
+      <slot name="beforeArrows" />
       <div class="calendar-header__chevron-arrows">
-        <FontAwesomeIcon
-          class="calendar-header__chevron-arrow calendar-header__chevron-arrow-left"
-          :icon="icons.chevronLeft"
-          @click="goToPeriod($event, 'previous')"
-        />
+        <div @click="goToPeriod($event, 'previous')">
+          <slot name="arrow-left">
+            <FontAwesomeIcon
+              class="calendar-header__chevron-arrow calendar-header__chevron-arrow-left"
+              :icon="icons.chevronLeft"
+            />
+          </slot>
+        </div>
 
-        <FontAwesomeIcon
-          class="calendar-header__chevron-arrow calendar-header__chevron-arrow-right"
-          :icon="icons.chevronRight"
-          @click="goToPeriod($event, 'next')"
-        />
+        <div @click="goToPeriod($event, 'next')">
+          <slot name="arrow-right">
+            <FontAwesomeIcon
+              class="calendar-header__chevron-arrow calendar-header__chevron-arrow-right"
+              :icon="icons.chevronRight"
+            />
+          </slot>
+        </div>
       </div>
+
+      <slot name="beforeDatepicker" />
 
       <DatePicker
         ref="periodSelect"
@@ -28,61 +44,55 @@
         :time-prop="time"
         :period-prop="period"
         @updated="handlePeriodChange"
-      />
-
-      <div
+      >
+        <template v-for="(_, name) in $slots" v-slot:[name]="slotData">
+          <slot :name="name" v-bind="slotData" />
+        </template>
+      </DatePicker>
+      <slot name="beforeSelect" />
+      <select
         v-if="!onlyDayModeIsEnabled"
+        :value="mode"
+        @change="
+          $emit('change-mode', ($event.target as HTMLSelectElement).value)
+        "
         class="calendar-header__mode-picker"
       >
-        <div
-          class="calendar-header__mode-value"
-          @click="showModePicker = true"
-        >
-          {{ modeName }}
-        </div>
-
-        <div
-          v-if="showModePicker"
-          class="calendar-header__mode-options"
-          @mouseleave="showModePicker = false"
-        >
-          <template
-            v-for="calendarMode in modeOptions"
+        <template v-for="calendarMode in modeOptions">
+          <option
+            v-if="
+              !config.disableModes ||
+              !config.disableModes.includes(calendarMode)
+            "
             :key="calendarMode"
+            :value="calendarMode"
+            :class="'is-' + calendarMode + '-mode'"
           >
-            <div
-              v-if="
-                !config.disableModes || !config.disableModes.includes(calendarMode)
-              "
-              class="calendar-header__mode-option"
-              :class="'is-' + calendarMode + '-mode'"
-              @click="$emit('change-mode', calendarMode)"
-            >
-              {{ getLanguage(languageKeys[calendarMode], time.CALENDAR_LOCALE) }}
-            </div>
-          </template>
-        </div>
-      </div>
+            {{ getLanguage(languageKeys[calendarMode], time.CALENDAR_LOCALE) }}
+          </option>
+        </template>
+      </select>
+      <slot name="afterSelect" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, type PropType } from 'vue';
-import DatePicker from './DatePicker.vue';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { defineComponent, type PropType } from "vue";
+import DatePicker from "./DatePicker.vue";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import {
   faChevronLeft,
   faChevronRight,
-} from '@fortawesome/free-solid-svg-icons';
-import { type configInterface } from '../../typings/config.interface';
-import Time from '../../helpers/Time';
-import { type periodInterface } from '../../typings/interfaces/period.interface';
-import getLanguage from '../../language';
-import { type modeType } from '../../typings/types';
+} from "@fortawesome/free-solid-svg-icons";
+import { type configInterface } from "../../typings/config.interface";
+import Time from "../../helpers/Time";
+import { type periodInterface } from "../../typings/interfaces/period.interface";
+import getLanguage from "../../language";
+import { type modeType } from "../../typings/types";
 
 export default defineComponent({
-  name: 'AppHeader',
+  name: "AppHeader",
 
   components: {
     DatePicker,
@@ -98,7 +108,7 @@ export default defineComponent({
     },
     mode: {
       type: String as PropType<modeType>,
-      default: 'week',
+      default: "week",
     },
     time: {
       type: Object as PropType<Time>,
@@ -114,11 +124,11 @@ export default defineComponent({
     },
   },
 
-  emits: ['change-mode', 'updated-period'],
+  emits: ["change-mode", "updated-period"],
 
   data() {
     return {
-      modeOptions: ['month', 'week', 'day'] as modeType[],
+      modeOptions: ["month", "week", "day"] as modeType[],
       icons: {
         chevronLeft: faChevronLeft,
         chevronRight: faChevronRight,
@@ -130,14 +140,14 @@ export default defineComponent({
 
   computed: {
     periodName() {
-      if (this.mode === 'week') {
+      if (this.mode === "week") {
         const startMonth = this.time.getLocalizedNameOfMonth(
           this.currentPeriod?.start,
-          'short'
+          "short"
         );
         const endMonth = this.time.getLocalizedNameOfMonth(
           this.currentPeriod?.end,
-          'short'
+          "short"
         );
 
         return startMonth === endMonth
@@ -149,9 +159,9 @@ export default defineComponent({
       return (
         this.time.getLocalizedNameOfMonth(
           this.currentPeriod?.selectedDate,
-          'short'
+          "short"
         ) +
-        ' ' +
+        " " +
         this.currentPeriod.selectedDate.getFullYear()
       );
     },
@@ -164,8 +174,8 @@ export default defineComponent({
     },
 
     onlyDayModeIsEnabled() {
-      const weekIsDisabled = this.config.disableModes?.includes('week');
-      const monthIsDisabled = this.config.disableModes?.includes('month');
+      const weekIsDisabled = this.config.disableModes?.includes("week");
+      const monthIsDisabled = this.config.disableModes?.includes("month");
 
       return this.config.disableModes && weekIsDisabled && monthIsDisabled;
     },
@@ -174,8 +184,8 @@ export default defineComponent({
   watch: {
     isSmall: {
       handler(value) {
-        if (value) this.modeOptions = ['month', 'day'];
-        else this.modeOptions = ['month', 'week', 'day'];
+        if (value) this.modeOptions = ["month", "day"];
+        else this.modeOptions = ["month", "week", "day"];
       },
       immediate: true,
     },
@@ -185,18 +195,18 @@ export default defineComponent({
     handlePeriodChange(value: { start: Date; end: Date; selectedDate: Date }) {
       this.currentPeriod = value;
 
-      this.$emit('updated-period', value);
+      this.$emit("updated-period", value);
     },
 
-    goToPeriod(event: MouseEvent, direction: 'previous' | 'next') {
+    goToPeriod(event: MouseEvent, direction: "previous" | "next") {
       (this.$refs.periodSelect as typeof DatePicker).goToPeriod(direction);
     },
-  }
+  },
 });
 </script>
 
 <style scoped lang="scss">
-@use '../../styles/mixins.scss' as mixins;
+@use "../../styles/mixins.scss" as mixins;
 
 .calendar-header {
   display: flex;
